@@ -12,8 +12,8 @@ import fr.enssat.BoulderDash.models.LevelModel;
  * @author Colin Leverger <me@colinleverger.fr>
  * @since 2015-06-19
  */
-public class RockfordUpdateController implements Runnable {
-	private LevelModel levelModel;
+public class RockfordUpdateController extends RunnableTaskController {
+//	private LevelModel levelModel;
 	private Thread elementMovingThread;
 	private int rockfordPositionX;
 	private int rockfordPositionY;
@@ -25,31 +25,24 @@ public class RockfordUpdateController implements Runnable {
 	 * @param levelModel  Level model
 	 */
 	public RockfordUpdateController(LevelModel levelModel) {
-		this.levelModel = levelModel;
-		this.elementMovingThread = new Thread(this);
-		this.elementMovingThread.start();
+		super(levelModel);
 		this.rockfordHasMoved = false;
 	}
 
-	/**
-	 * Watches for elements to be moved
-	 */
-	public void run() {
-		while (this.levelModel.isGameRunning()) {
-			if(!this.levelModel.getGamePaused()){
-				if (this.rockfordHasMoved) {
-					this.levelModel.setPositionOfRockford(rockfordPositionX, rockfordPositionY);
-					this.rockfordHasMoved = false;
-				}
-			}
-			try {
-				Thread.sleep(100);
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			}
+
+	@Override
+	protected int getSleepDuration() {
+		return 100;
+	}
+
+	@Override
+	protected void executeTask() {
+		if (this.rockfordHasMoved) {
+			this.levelModel.setPositionOfRockford(rockfordPositionX, rockfordPositionY);
+			this.rockfordHasMoved = false;
 		}
 	}
-	
+
 	/**
 	 * Moves Rockford
 	 *

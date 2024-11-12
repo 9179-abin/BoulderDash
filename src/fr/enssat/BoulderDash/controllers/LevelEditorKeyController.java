@@ -15,8 +15,8 @@ import java.awt.event.KeyListener;
  * @author      Valerian Saliou <valerian@valeriansaliou.name>
  * @since       2015-06-21
  */
-public class LevelEditorKeyController implements KeyListener {
-    private LevelModel levelModel;
+public class LevelEditorKeyController extends BaseController {
+//    private LevelModel levelModel;
     private LevelEditorView levelEditorView;
 	private boolean capLocks;
 
@@ -27,73 +27,49 @@ public class LevelEditorKeyController implements KeyListener {
      * @param  levelEditorView  Level editor view
      */
     public LevelEditorKeyController(LevelModel levelModel, LevelEditorView levelEditorView) {
-        this.levelModel = levelModel;
+        super(levelModel);
         this.capLocks = false;
         this.levelEditorView = levelEditorView;
     }
 
-    /**
-     * Handles the 'key pressed' event
-     *
-     * @param  e  Key event
-     */
-    public void keyPressed(KeyEvent e) {
+
+    @Override
+    protected void handleUpKey() {
+        this.levelModel.decrementCursorYPosition();
+    }
+
+    @Override
+    protected void handleDownKey() {
+        this.levelModel.incrementCursorYPosition();
+    }
+
+    @Override
+    protected void handleLeftKey() {
+        this.levelModel.decrementCursorXPosition();
+    }
+
+    @Override
+    protected void handleRightKey() {
+        this.levelModel.incrementCursorXPosition();
+    }
+
+    @Override
+    protected void handleOtherKey(KeyEvent e) {
         int keyCode = e.getKeyCode();
-
         switch (keyCode) {
-            // Direction: UP
-            case KeyEvent.VK_UP:
-                this.levelModel.decrementCursorYPosition();
-                break;
-
-            // Direction: DOWN
-            case KeyEvent.VK_DOWN:
-                this.levelModel.incrementCursorYPosition();
-                break;
-
-            // Direction: LEFT
-            case KeyEvent.VK_LEFT:
-                this.levelModel.decrementCursorXPosition();
-                break;
-
-            // Direction: RIGHT
-            case KeyEvent.VK_RIGHT:
-                this.levelModel.incrementCursorXPosition();
-                break;
-
             // Key: SPACE
             case KeyEvent.VK_SPACE:
                 this.levelModel.triggerBlockChange(this.levelEditorView.getPickedBlockValue());
                 break;
-            
+
             case 16:
                 this.capLocks = !capLocks;
                 break;
-        }
 
+        }
         // Hold block change (quick edit)
         if(capLocks) {
-        	this.levelModel.triggerBlockChange(this.levelEditorView.getPickedBlockValue());
+            this.levelModel.triggerBlockChange(this.levelEditorView.getPickedBlockValue());
         }
-    }
-
-    /**
-     * Handles the 'key released' event
-     *
-     * @param  e  Key event
-     */
-    @Override
-    public void keyReleased(KeyEvent e) {
-        // Do nothing.
-    }
-
-    /**
-     * Handles the 'key typed' event
-     *
-     * @param  e  Key event
-     */
-    @Override
-    public void keyTyped(KeyEvent e) {
-        // Do nothing.
     }
 }

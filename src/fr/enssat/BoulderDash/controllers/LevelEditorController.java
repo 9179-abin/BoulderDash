@@ -4,6 +4,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 import fr.enssat.BoulderDash.exceptions.LevelConstraintNotRespectedException;
+import fr.enssat.BoulderDash.helpers.AudioLoadHelper;
 import fr.enssat.BoulderDash.helpers.LevelRemoveHelper;
 import fr.enssat.BoulderDash.helpers.LevelSaveHelper;
 import fr.enssat.BoulderDash.models.LevelModel;
@@ -21,8 +22,8 @@ import javax.swing.*;
  * @author      Valerian Saliou <valerian@valeriansaliou.name>
  * @since       2015-06-19
  */
-public class LevelEditorController implements ActionListener {
-    private LevelModel levelModel;
+public class LevelEditorController extends BaseController implements ActionListener {
+//    private LevelModel levelModel;
 	private LevelEditorView levelEditorView;
 	private NavigationBetweenViewController nav;
 
@@ -32,7 +33,12 @@ public class LevelEditorController implements ActionListener {
      * @param  levelModel  Level model
      */
     public LevelEditorController(LevelModel levelModel, NavigationBetweenViewController nav) {
-        this.levelModel = levelModel;
+        super(levelModel);
+        registerCommand("save",this::handleSave);
+        registerCommand("delete",this::handleDelete);
+        registerCommand("help",this::handleHelp);
+        registerCommand("new",this::handleNewLevel);
+        registerCommand("menu", this::handleMenu);
         this.levelModel.setShowCursor(true);
 
         this.nav = nav;
@@ -49,66 +55,10 @@ public class LevelEditorController implements ActionListener {
      *
      * @param  event  Action event
      */
+
+    @Override
     public void actionPerformed(ActionEvent event) {
-        switch(event.getActionCommand()) {
-            case "menu":
-            	this.levelEditorView.setVisible(false);
-            	this.nav.setMenuView();           	
-                this.nav.getAudioLoadHelper().startMusic("game");
-
-                break;
-
-            case "save":
-                // Check constraints
-                try {
-                    this.levelModel.checkConstraints();
-
-                    // Save action (direct save)
-                    String levelId = this.levelEditorView.getSelectedLevel();
-                    LevelSaveHelper levelSave;
-
-                    if(levelId == null || levelId.isEmpty()) {
-                        // Create a new level
-                        levelSave = new LevelSaveHelper(levelModel.getGroundLevelModel());
-                    } else {
-                        // Overwrite existing level
-                        levelSave = new LevelSaveHelper(levelId, levelModel.getGroundLevelModel());
-                    }
-
-                    JFrame frameDialog = new JFrame("Info");
-                    JOptionPane.showMessageDialog(frameDialog, "Level saved");
-
-                    this.levelEditorView.openedLevelChange(levelSave.getLevelId());
-                } catch(LevelConstraintNotRespectedException e) {
-                    JFrame frameDialog = new JFrame("Error");
-                    JOptionPane.showMessageDialog(frameDialog, e.getMessage());
-                }
-
-                break;
-
-            case "delete":
-                String levelId = this.levelEditorView.getSelectedLevel();
-                JFrame frameDialog = new JFrame("Info");
-
-                if(levelId == null || levelId.isEmpty()) {
-                    JOptionPane.showMessageDialog(frameDialog, "Level not yet saved, no need to delete it!");
-                } else {
-                    new LevelRemoveHelper(levelId);
-                    JOptionPane.showMessageDialog(frameDialog, "Level deleted!");
-
-                    this.levelEditorView.openedLevelChange(null);
-                }
-                break;
-                
-            case "help":
-            	new HelpView();
-                break;
-
-            case "new":
-                this.levelEditorView.openedLevelChange(null);
-                break;
-        }
-
+        super.actionPerformed(event);
         this.getLevelEditorView().getLevelEditorGroundView().grabFocus();
     }
 
@@ -138,6 +88,61 @@ public class LevelEditorController implements ActionListener {
 	public void setLevelEditorView(LevelEditorView levelEditorView) {
 		this.levelEditorView = levelEditorView;
 	}
+
+    private void handleSave(){
+        // Check constraints
+        try {
+            this.levelModel.checkConstraints();
+
+            // Save action (direct save)
+            String levelId = this.levelEditorView.getSelectedLevel();
+            LevelSaveHelper levelSave;
+
+            if(levelId == null || levelId.isEmpty()) {
+                // Create a new level
+                levelSave = new LevelSaveHelper(levelModel.getGroundLevelModel());
+            } else {
+                // Overwrite existing level
+                levelSave = new LevelSaveHelper(levelId, levelModel.getGroundLevelModel());
+            }
+
+            JFrame frameDialog = new JFrame("Info");
+            JOptionPane.showMessageDialog(frameDialog, "Level saved");
+
+            this.levelEditorView.openedLevelChange(levelSave.getLevelId());
+        } catch(LevelConstraintNotRespectedException e) {
+            JFrame frameDialog = new JFrame("Error");
+            JOptionPane.showMessageDialog(frameDialog, e.getMessage());
+        }
+    }
+
+    private void handleDelete(){
+        String levelId = this.levelEditorView.getSelectedLevel();
+        JFrame frameDialog = new JFrame("Info");
+
+        if(levelId == null || levelId.isEmpty()) {
+            JOptionPane.showMessageDialog(frameDialog, "Level not yet saved, no need to delete it!");
+        } else {
+            new LevelRemoveHelper(levelId);
+            JOptionPane.showMessageDialog(frameDialog, "Level deleted!");
+
+            this.levelEditorView.openedLevelChange(null);
+        }
+    }
+
+    private void handleHelp(){
+        new HelpView();
+    }
+
+    private void handleNewLevel(){
+        this.levelEditorView.openedLevelChange(null);
+    }
+
+    private void handleMenu(){
+        this.levelEditorView.setVisible(false);
+        this.nav.setMenuView();
+        this.nav.getAudioLoadHelper().startMusic("game");
+    }
     
     
 }

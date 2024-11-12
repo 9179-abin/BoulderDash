@@ -465,6 +465,22 @@ public class LevelModel extends Observable implements Runnable {
 		return groundGrid;
 	}
 
+	public DisplayableElementModel getElementBelow(int x, int y) {
+		return (y + 1 < getSizeHeight()) ? groundGrid[x][y + 1] : null;
+	}
+
+	public DisplayableElementModel getElementAbove(int x, int y) {
+		return (y - 1 >= 0) ? groundGrid[x][y - 1] : null;
+	}
+
+	public DisplayableElementModel getElementLeft(int x, int y) {
+		return (x - 1 >= 0) ? groundGrid[x - 1][y] : null;
+	}
+
+	public DisplayableElementModel getElementRight(int x, int y) {
+		return (x + 1 < getSizeWidth()) ? groundGrid[x + 1][y] : null;
+	}
+
 	/**
 	 * Notify observers about a model change
 	 */

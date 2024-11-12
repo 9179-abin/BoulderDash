@@ -15,20 +15,22 @@ import fr.enssat.BoulderDash.controllers.GameController;
  * @author Colin Leverger <me@colinleverger.fr>
  *
  */
-public class NavigationBetweenViewController implements ActionListener {
+public class NavigationBetweenViewController extends BaseController {
 	private LevelEditorController levelEditorController;
 	private MenuView menuView;
 	private AudioLoadHelper audioLoadHelper;
-	private LevelModel levelModelForGame, levelModelForEditor;
-	private GameController gameController;
+    private GameController gameController;
 	private String pickedLevelIdentifier;
 
     /**
      * Class constructor
      */
 	public NavigationBetweenViewController() {
+		super(new AudioLoadHelper());
+		registerCommand("quit", this::handleQuit);
+		registerCommand("editor", this::handleEditor);
+		registerCommand("game", this::handleGame);
 		this.audioLoadHelper = new AudioLoadHelper();
-
         // Play game music
         this.getAudioLoadHelper().startMusic("game");
 
@@ -43,42 +45,7 @@ public class NavigationBetweenViewController implements ActionListener {
      */
 	@Override
 	public void actionPerformed(ActionEvent event) {
-		switch (event.getActionCommand()) {
-            case "quit":
-                System.exit(0);
-                break;
-
-            case "editor":
-                // New blank model for editor
-                this.levelModelForEditor = new LevelModel(audioLoadHelper);
-                this.levelEditorController = new LevelEditorController(this.levelModelForEditor, this);
-
-                this.levelEditorController.getLevelEditorView().setVisible(true);
-                this.levelEditorController.getLevelEditorView().getLevelEditorGroundView().grabFocus();
-
-                if (gameController != null) {
-                    this.gameController.getGameView().setVisible(false);
-                }
-
-                break;
-
-            case "game":
-                // Reinit the levelModelForGame...
-                pickedLevelIdentifier = this.menuView.getLevelIdentifier();
-
-                this.levelModelForGame = new LevelModel(pickedLevelIdentifier, audioLoadHelper);
-                this.gameController = new GameController(levelModelForGame, audioLoadHelper, this);
-
-                if (levelEditorController != null) {
-                    this.levelEditorController.getLevelEditorView().setVisible(false);
-                }
-
-                this.gameController.getGameView().setVisible(true);
-                this.gameController.getGameView().getGameFieldView().grabFocus();
-
-			    break;
-		}
-
+		super.actionPerformed(event);
 		this.menuView.setVisible(false);
 	}
 
@@ -103,7 +70,7 @@ public class NavigationBetweenViewController implements ActionListener {
 	/**
 	 * Set the first view
 	 * 
-	 * @param  menuView
+	 * @param menuView
 	 */
 	public MenuView setMenuView() {
 		this.menuView = new MenuView(this);
@@ -127,6 +94,35 @@ public class NavigationBetweenViewController implements ActionListener {
 	public void setPickedLevelIdentifier(String pickedLevelIdentifier) {
 		this.pickedLevelIdentifier = pickedLevelIdentifier;
 	}
+
+	private void handleQuit(){
+		System.exit(0);
+	}
 	
-	
+	private void handleEditor(){
+		LevelModel levelModelForEditor = new LevelModel(audioLoadHelper);
+		this.levelEditorController = new LevelEditorController(levelModelForEditor, this);
+
+		this.levelEditorController.getLevelEditorView().setVisible(true);
+		this.levelEditorController.getLevelEditorView().getLevelEditorGroundView().grabFocus();
+
+		if (gameController != null) {
+			this.gameController.getGameView().setVisible(false);
+		}
+	}
+
+	private void handleGame(){
+		// Reinit the levelModelForGame...
+		pickedLevelIdentifier = this.menuView.getLevelIdentifier();
+
+		LevelModel levelModelForGame = new LevelModel(pickedLevelIdentifier, audioLoadHelper);
+		this.gameController = new GameController(levelModelForGame, audioLoadHelper, this);
+
+		if (levelEditorController != null) {
+			this.levelEditorController.getLevelEditorView().setVisible(false);
+		}
+
+		this.gameController.getGameView().setVisible(true);
+		this.gameController.getGameView().getGameFieldView().grabFocus();
+	}
 }

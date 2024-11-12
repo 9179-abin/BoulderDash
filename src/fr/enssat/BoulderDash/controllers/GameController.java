@@ -19,9 +19,9 @@ import java.awt.event.ActionListener;
  * @author      Colin Leverger <me@colinleverger.fr>
  * @since       2015-06-19
  */
-public class GameController implements ActionListener {
-	private LevelModel levelModel;
-    private AudioLoadHelper audioLoadHelper;
+public class GameController extends BaseController {
+//	private LevelModel levelModel;
+//    private AudioLoadHelper audioLoadHelper;
     private boolean firstClickOnPause;
 	private MenuView menuView;
 	private GameView gameView;
@@ -34,12 +34,13 @@ public class GameController implements ActionListener {
      * @param navigationBetweenViewController 
      */
 	public GameController(LevelModel levelModel, AudioLoadHelper audioLoadHelper, NavigationBetweenViewController navigationBetweenViewController) {
-        this.firstClickOnPause = true;
+		super(levelModel, audioLoadHelper);
+		registerCommand("pause", this::handlePause);
+		registerCommand("restart", this::handleRestart);
+		registerCommand("menu", this::handleMenu);
+		this.firstClickOnPause = true;
         
         this.navigationBetweenViewController = navigationBetweenViewController;
-        
-		this.levelModel = levelModel;
-        this.audioLoadHelper = audioLoadHelper;
         this.gameView = new GameView(this, levelModel); 
         this.menuView = navigationBetweenViewController.getMenuView();
 
@@ -47,37 +48,6 @@ public class GameController implements ActionListener {
         this.getAudioLoadHelper().playSound("new");
 	}
 
-	/**
-	 * Handles the 'action performed' event
-     *
-	 * @param  event  Action event
-	 */
-	public void actionPerformed(ActionEvent event) {
-        switch(event.getActionCommand()) {
-            case "pause":
-            	if(this.firstClickOnPause) {
-            		this.levelModel.setGamePaused(true);
-            	} else if(!this.firstClickOnPause) {
-            		this.levelModel.setGamePaused(false);
-            	}
-
-            	this.firstClickOnPause = !this.firstClickOnPause;
-            	this.gameView.getGameFieldView().grabFocus();
-                break;
-
-            case "restart":
-                this.resetGame("restart");
-                this.getAudioLoadHelper().playSound("new");
-                this.gameView.getGameFieldView().grabFocus();
-                break;
-            
-            case "menu":
-            	this.menuView.setVisible(true);
-                this.getAudioLoadHelper().startMusic("game");
-            	this.resetGame("menu");
-                break;
-        }
-	}
 
 	/**
 	 * Function to reset the game
@@ -115,5 +85,28 @@ public class GameController implements ActionListener {
 	 */
 	public void setGameView(GameView gameView) {
 		this.gameView = gameView;
+	}
+
+	private void handlePause() {
+		if(this.firstClickOnPause) {
+			this.levelModel.setGamePaused(true);
+		} else if(!this.firstClickOnPause) {
+			this.levelModel.setGamePaused(false);
+		}
+
+		this.firstClickOnPause = !this.firstClickOnPause;
+		this.gameView.getGameFieldView().grabFocus();
+	}
+
+	private void handleRestart() {
+		this.resetGame("restart");
+		this.getAudioLoadHelper().playSound("new");
+		this.gameView.getGameFieldView().grabFocus();
+	}
+
+	private void handleMenu() {
+		this.menuView.setVisible(true);
+		this.getAudioLoadHelper().startMusic("game");
+		this.resetGame("menu");
 	}
 }
